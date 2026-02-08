@@ -2,7 +2,7 @@
 using namespace std;
 
 struct HyperMegaLogLogProMax {
-    static const int B = 10;
+    static const int B = 14;
     static const int Q = 1 << B;
     static const int L = 32;
 

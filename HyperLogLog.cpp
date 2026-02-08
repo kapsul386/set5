@@ -11,13 +11,18 @@ double invPow2[64];
 
 unsigned int hash32(const string &s) {
     uint32_t h = 2166136261u;
-    uint32_t p = 16777619u;
-    for (int i = 0; i < (int)s.size(); i++) {
-        h ^= (uint32_t)(unsigned char)s[i];
-        h *= p;
+    for (unsigned char c : s) {
+        h ^= (uint32_t)c;
+        h *= 16777619u;
     }
+    h ^= h >> 16;
+    h *= 0x85ebca6bu;
+    h ^= h >> 13;
+    h *= 0xc2b2ae35u;
+    h ^= h >> 16;
     return (unsigned int)h;
 }
+
 
 string random_string() {
     static string alphabet =
