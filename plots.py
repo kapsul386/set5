@@ -82,59 +82,79 @@ plt.legend(ncol=2, fontsize=8)
 plt.show()
 
 
-B0 = 10
+B0 = 14
 
-slow10 = df[(df["mode"] == "slow") & (df["B"] == B0)].copy()
-fast10 = df[(df["mode"] == "fast") & (df["B"] == B0)].copy()
+fastB = df[(df["mode"] == "fast") & (df["B"] == B0)].copy()
 
-m_slow10 = slow10.groupby("t")[["F0_true", "F0_est"]].mean()
-m_fast10 = fast10.groupby("t")[["F0_true", "F0_est"]].mean()
+m_fast = fastB.groupby("t")[["F0_true", "F0_est"]].mean()
 
 plt.figure(figsize=(10, 5))
 
-true_line = m_slow10["F0_true"]
-plt.plot(true_line.index, true_line.values, label="F0 true", linewidth=3, color="black")
+true_line = m_fast["F0_true"]
+plt.plot(
+    true_line.index,
+    true_line.values,
+    label="F0 true",
+    linewidth=3,
+    color="black"
+)
 
-plt.plot(m_slow10.index, m_slow10["F0_est"], label="estimate slow (B=10)")
-plt.plot(m_fast10.index, m_fast10["F0_est"], linestyle="--", label="estimate fast (B=10)")
+plt.plot(
+    m_fast.index,
+    m_fast["F0_est"],
+    linestyle="--",
+    label=f"estimate fast (B={B0})"
+)
 
-y_min = min(true_line.min(), m_slow10["F0_est"].min(), m_fast10["F0_est"].min())
-y_max = max(true_line.max(), m_slow10["F0_est"].max(), m_fast10["F0_est"].max())
+y_min = min(true_line.min(), m_fast["F0_est"].min())
+y_max = max(true_line.max(), m_fast["F0_est"].max())
 pad = 0.03 * (y_max - y_min + 1e-9)
 plt.ylim(y_min - pad, y_max + pad)
 
 plt.xlabel("Processed elements")
 plt.ylabel("Unique count")
-plt.title("ZOOM: True vs HLL estimate (B=10)")
+plt.title(f"ZOOM: True vs HLL estimate (FAST, B={B0})")
 plt.grid(True)
 plt.legend()
 plt.show()
 
 
-slow10["rel_err"] = (slow10["F0_est"] - slow10["F0_true"]) / slow10["F0_true"]
-fast10["rel_err"] = (fast10["F0_est"] - fast10["F0_true"]) / fast10["F0_true"]
+fastB["rel_err"] = (fastB["F0_est"] - fastB["F0_true"]) / fastB["F0_true"]
 
-stats_slow = slow10.groupby("t")["rel_err"]
-stats_fast = fast10.groupby("t")["rel_err"]
-
-mean_slow = stats_slow.mean()
-std_slow = stats_slow.std()
+stats_fast = fastB.groupby("t")["rel_err"]
 
 mean_fast = stats_fast.mean()
 std_fast = stats_fast.std()
 
 plt.figure(figsize=(10, 5))
 
-plt.plot(mean_slow.index, mean_slow.values, label="slow mean error (B=10)")
-plt.fill_between(mean_slow.index, mean_slow - std_slow, mean_slow + std_slow, alpha=0.2)
+plt.plot(
+    mean_fast.index,
+    mean_fast.values,
+    linestyle="--",
+    label=f"fast mean error (B={B0})"
+)
 
-plt.plot(mean_fast.index, mean_fast.values, linestyle="--", label="fast mean error (B=10)")
-plt.fill_between(mean_fast.index, mean_fast - std_fast, mean_fast + std_fast, alpha=0.2)
+plt.fill_between(
+    mean_fast.index,
+    mean_fast - std_fast,
+    mean_fast + std_fast,
+    alpha=0.2
+)
 
-all_min = min((mean_slow - std_slow).min(), (mean_fast - std_fast).min())
-all_max = max((mean_slow + std_slow).max(), (mean_fast + std_fast).max())
+all_min = (mean_fast - std_fast).min()
+all_max = (mean_fast + std_fast).max()
 pad = 0.2 * (all_max - all_min + 1e-9)
 plt.ylim(all_min - pad, all_max + pad)
+
+plt.axhline(0, color="black", linestyle="--")
+plt.xlabel("Processed elements")
+plt.ylabel("Relative error")
+plt.title(f"ZOOM: Relative error (FAST, B={B0})")
+plt.grid(True)
+plt.legend()
+plt.show()
+
 
 plt.axhline(0, color="black", linestyle="--")
 plt.xlabel("Processed elements")
