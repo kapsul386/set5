@@ -5,12 +5,10 @@ const int N = 10000;
 const int RUNS = 50;
 const int STEPS = 20;
 
-// FAST может иметь B до 16 (q=65536)
 const int MAX_Q = 1 << 16;
 
 double invPow2[64];
 
-/* -------- FNV-1a 32-bit -------- */
 unsigned int hash32(const string &s) {
     uint32_t h = 2166136261u;
     uint32_t p = 16777619u;
@@ -21,7 +19,6 @@ unsigned int hash32(const string &s) {
     return (unsigned int)h;
 }
 
-/* -------- Random stream -------- */
 string random_string() {
     static string alphabet =
         "qwertyuiopasdfghjklzxcvbnm"
@@ -38,25 +35,16 @@ string random_string() {
     return s;
 }
 
-/*
-  -------- rho(w) по определению HLL --------
-  Берём хвост из (32 - B) бит:
-  tail = h & ((1<<(32-B)) - 1)
 
-  rho(tail) = (число ведущих нулей в этих rem битах) + 1
-  если tail == 0 => rho = rem + 1
-*/
 int rho_tail(unsigned int h, int B) {
     int rem = 32 - B;
 
-    // если rem == 32 (B==0), маска (1<<32) невалидна, но у нас B>=4 всегда
     unsigned int mask = (1u << rem) - 1u;
-    unsigned int tail = h & mask;     // ровно rem младших бит
+    unsigned int tail = h & mask;
 
     if (tail == 0) return rem + 1;
 
     int r = 1;
-    // ищем первую 1, начиная со старшего бита tail (k = rem-1)
     for (int k = rem - 1; k >= 0; k--) {
         if ((tail >> k) & 1u) break;
         r++;
@@ -64,7 +52,6 @@ int rho_tail(unsigned int h, int B) {
     return r;
 }
 
-/* -------- alpha -------- */
 double alpha_q(int q) {
     if (q == 2) return 0.3512;
     if (q == 4) return 0.5324;
